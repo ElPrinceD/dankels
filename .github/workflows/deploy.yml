@@ -36,6 +36,15 @@ jobs:
         env:
           NODE_ENV: production
       
+      - name: Verify build output
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "Error: dist directory not found"
+            exit 1
+          fi
+          echo "Build output verified:"
+          ls -la dist/
+      
       - name: Setup Pages
         uses: actions/configure-pages@v4
       
