@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -46,6 +46,19 @@ jobs:
           fi
           echo "Build output verified:"
           ls -la dist/
+          echo "CNAME file check:"
+          ls -la public/CNAME 2>/dev/null || echo "CNAME will be copied"
+      
+      - name: Copy CNAME to dist
+        run: |
+          if [ -f "public/CNAME" ]; then
+            cp public/CNAME dist/CNAME
+            echo "CNAME file copied to dist"
+          else
+            echo "dankels.com" > dist/CNAME
+            echo "CNAME file created in dist"
+          fi
+          cat dist/CNAME
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -55,13 +68,6 @@ jobs:
         with:
           path: './dist'
 
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
